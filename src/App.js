@@ -144,11 +144,31 @@ function App() {
     }
   };
 
+  const LikeButton = () => {
+    const [ like, setLike ] = useState({ count: 0, liked: false });
+
+    const onClick = () => {
+        setLike({
+            count: like.count + (like.liked ? -1 : 1),
+            liked: !like.liked
+        });
+    }
+
+    return (
+        <>
+            <button onClick={onClick}>
+            {like.liked ? '✔' : ''}❤️
+            </button>
+            {like.count}
+        </>
+    );
+  }
+
   return (
     <div className="mainContariner">
       <div className="dataContariner">
         <div className="header">
-          Welcome
+          Welcome....
         </div>
         <div className="bio">
           Ethereum walletを接続後、メッセージを入力して投稿してください
@@ -195,6 +215,7 @@ function App() {
                   <div>Address: {post.address}</div>
                   <div>Time: {post.timestamp.toString()}</div>
                   <div>Message: {post.message}</div>
+                  <LikeButton />
                 </div>
               );
             })}
