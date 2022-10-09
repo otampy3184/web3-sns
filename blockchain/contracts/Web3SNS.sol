@@ -28,17 +28,20 @@ contract Web3SNS {
     event NewPost(address from, string message, uint256 timestamp, uint256 likes);
 
     // 新規の投稿機能
-    function tweet(string memory message) public {
+    function tweet(string memory _message) public {
         console.log("making tweet...");
 
         // 現在のPostIDを取得
         uint256 newPostId = _postIds.current();
+
+        // 現在のTimestampをBlockから取得
+        uint256 _timestamp = block.timestamp;
         
         // 新規Postの作成
         Post memory newPost =Post({
             from: msg.sender,
-            message: message,
-            timestamp: block.timestamp 
+            message: _message,
+            timestamp: _timestamp
         });
 
         // 新規Postを配列に渡し、マッピングに登録する
@@ -49,6 +52,8 @@ contract Web3SNS {
         console.log("tweet by %s w/ ID %s has been posted", msg.sender, newPostId);
 
         _postIds.increment();
+
+        emit NewPost(msg.sender, _message, _timestamp, 0);
     }
 
     // Postへのいいね機能
