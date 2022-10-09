@@ -14,13 +14,15 @@ contract Web3SNS {
         address from;
         string message;
         uint256 timestamp;
+        uint256 likes;
     }
 
     // 全Postの配列
     Post[] allPosts;
 
     // Postごとのいいね数を保存するマッピング
-    mapping (uint256 => uint256) public LikesCount;
+    //mapping (uint256 => uint256) public LikesCount;
+    
     // PostをIdで管理するマッピング
     mapping (uint256 => Post) public TweetIdToPost;
 
@@ -36,12 +38,15 @@ contract Web3SNS {
 
         // 現在のTimestampをBlockから取得
         uint256 _timestamp = block.timestamp;
+
+        uint256 initialLikes = 0;
         
         // 新規Postの作成
         Post memory newPost =Post({
             from: msg.sender,
             message: _message,
-            timestamp: _timestamp
+            timestamp: _timestamp,
+            likes: initialLikes
         });
 
         // 新規Postを配列に渡し、マッピングに登録する
@@ -53,12 +58,13 @@ contract Web3SNS {
 
         _postIds.increment();
 
-        emit NewPost(msg.sender, _message, _timestamp, 0);
+        emit NewPost(msg.sender, _message, _timestamp, initialLikes);
     }
 
     // Postへのいいね機能
-    function like() public {
-
+    function like(uint256 _index) public returns(uint256){
+        TweetIdToPost[_index].likes++;
+        return TweetIdToPost[_index].likes;
     }
 
     // 全投稿を確認
