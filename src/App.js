@@ -7,9 +7,9 @@ import abi from "./abi/Web3SNS.json";
 function App() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
-  const [allTweets, setAllTweets] = useState("");
+  const [allTweets, setAllTweets] = useState([]);
 
-  const contractAddress = "0x0eDd66F66aBF49655C58FB248E08867E1b0220B6";
+  const contractAddress = "0x600b263c2D18d686749748bf1B520318f1602d10";
   const contractABI = abi.abi;
 
   const checkIfWalletIsConnected = async () => {
@@ -27,6 +27,7 @@ function App() {
         const account = accounts[0];
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
+        getAllTweets();
       } else {
         console.log("No authorized account found");
       }
@@ -56,10 +57,10 @@ function App() {
     }
   };
 
-  const getAllPosts = async() => {
+  const getAllTweets = async () => {
     const { ethereum } = window;
     try {
-      if(ethereum) {
+      if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const web3SNSContract = new ethers.Contract(
@@ -81,7 +82,7 @@ function App() {
       } else {
         console.log("Ethereum object not found");
       }
-    } catch(error){
+    } catch (error) {
       console.log(error);
     }
   };
@@ -105,7 +106,7 @@ function App() {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      
+
       web3SNSContract = new ethers.Contract(
         contractAddress,
         contractABI,
@@ -114,25 +115,90 @@ function App() {
       web3SNSContract.on("NewPost", onNewPost);
     }
     return () => {
-      if(web3SNSContract) {
+      if (web3SNSContract) {
         web3SNSContract.off("NewPost", onNewPost);
       }
     };
   }, []);
 
+  const post = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const web3SNSContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+        const tweetTxn = await web3SNSContract.tweet(tweetValue);
+        console.log("Minting...", tweetTxn.hash);
+        await tweetTxn.wait();
+        console.log("Minted -- ", tweetTxn.hash);
+      } else {
+        console.log("Ethereum object not found");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="mainContariner">
+      <div className="dataContariner">
+        <div className="header">
+          Welcome
+        </div>
+        <div className="bio">
+          Ethereum walletを接続後、メッセージを入力して投稿してください
+        </div>
+        <br />
         {/* ウォレットコネクトのボタン */}
         {!currentAccount && (
-          <button className="waveButton" onClick={connectWallet}>
+          <button className="tweetButton" onClick={connectWallet}>
             Connect Wallet
           </button>
         )}
         {currentAccount && (
-          <button className="waveButton">Wallet Connected</button>
+          <button className="tweetButton">Wallet Connected</button>
         )}
-      </header>
+        {currentAccount && (
+          <button className="tweetButton" onClick={post}>
+            投稿
+          </button>
+        )}
+        {currentAccount && (
+          <textarea
+            name="tweetArea"
+            placeholder="メッセージを入力"
+            type="text"
+            id="tweet"
+            value={tweetValue}
+            onChange={(e) => setTweetValue(e.target.value)}
+          />
+        )}
+        {currentAccount &&
+          allTweets
+            .slice(0)
+            .reverse()
+            .map((post, index) => {
+              return (
+                <div
+                  key={index}
+                  style={{
+                    backgroundColor: "#F8F8FF",
+                    marginTop: "16px",
+                    padding: "8px",
+                  }}
+                >
+                  <div>Address: {post.address}</div>
+                  <div>Time: {post.timestamp.toString()}</div>
+                  <div>Message: {post.message}</div>
+                </div>
+              );
+            })}
+      </div>
     </div>
   );
 }
