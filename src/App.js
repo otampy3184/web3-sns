@@ -180,6 +180,7 @@ function App() {
             Connect Wallet
           </button>
         )}
+        <br />
         {currentAccount && (
           <button className="tweetButton">Wallet Connected</button>
         )}
@@ -188,8 +189,9 @@ function App() {
             投稿
           </button>
         )}
+        <br />
         {currentAccount && (
-          <textarea
+          <textarea className="postForm"
             name="tweetArea"
             placeholder="メッセージを入力"
             type="text"
@@ -204,7 +206,7 @@ function App() {
             .reverse()
             .map((post, index) => {
               return (
-                <div
+                <div className="tweet"
                   key={index}
                   style={{
                     backgroundColor: "#F8F8FF",
