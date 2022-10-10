@@ -11,6 +11,7 @@ contract Web3SNS {
 
     // Postの構造体
     struct Post{
+        uint256 postId;
         address from;
         string message;
         uint256 timestamp;
@@ -22,12 +23,12 @@ contract Web3SNS {
 
     // Postごとのいいね数を保存するマッピング
     //mapping (uint256 => uint256) public LikesCount;
-    
     // PostをIdで管理するマッピング
     mapping (uint256 => Post) public TweetIdToPost;
 
     // 新しいPostがおこなわれた際に呼ばれるイベント
     event NewPost(address from, string message, uint256 timestamp, uint256 likes);
+    event NewLike(uint256 postId );
 
     // 新規の投稿機能
     function tweet(string memory _message) public {
@@ -43,6 +44,7 @@ contract Web3SNS {
         
         // 新規Postの作成
         Post memory newPost =Post({
+            postId: newPostId,
             from: msg.sender,
             message: _message,
             timestamp: _timestamp,
@@ -58,13 +60,21 @@ contract Web3SNS {
 
         _postIds.increment();
 
-        emit NewPost(msg.sender, _message, _timestamp, initialLikes);
+        emit NewPost(newPostId, msg.sender, _message, _timestamp, initialLikes);
     }
 
     // Postへのいいね機能
-    function like(uint256 _index) public returns(uint256){
+    function likesIncrement(uint256 _index) public returns(uint256){
         TweetIdToPost[_index].likes++;
+        console.log("New Likes Count:", TweetIdToPost[_index].likes);
+        emit NewLike(_index);
         return TweetIdToPost[_index].likes;
+    }
+
+    function likesDiscrement(uint256 _index) public returns(uint256){
+        TweetIdToPost[_index].likes--;
+        console.log("New Likes Count:", TweetIdToPost[_index].
+        emit NewLike(_index);
     }
 
     // 全投稿を確認
