@@ -19,7 +19,7 @@ function App() {
   const [sortByLikesFlg, setSortByLikesFlg] = useState(true);
   const [results, setResults] = useState([]);
 
-  const contractAddress = "0x175204Ea760995d4F1c0A2443c38929242854AB8";
+  const contractAddress = "0x756E389E40C97Bd15743529A31B59072949DB8f2";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
@@ -90,7 +90,7 @@ function App() {
             postId: post.postId.toNumber(),
             address: post.from,
             message: post.message,
-            timestamp: post.timestamp.toNumber(),
+            timestamp: (new Date(post.timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(post.timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
             likes: post.likes.toNumber(),
           };
         })
@@ -117,7 +117,7 @@ function App() {
           postId: postId.toNumber(),
           address: from,
           message: message,
-          timestamp: timestamp.toNumber(),
+          timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
           likes: likes.toNumber(),
         },
       ]);
@@ -154,7 +154,7 @@ function App() {
         postId: postId.toNumber(),
         address: from,
         message: message,
-        timestamp: timestamp.toNumber(),
+        timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
         likes: likes.toNumber(),
       }
       // Index番号で検索をかけ、対象Indexの要素のみnewPostに入れ替える
@@ -282,10 +282,10 @@ function App() {
     const result = allTweets.sort(await function (a, b) {
       if (sortByLikesFlg === true) {
         setSortByLikesFlg(false);
-        return (a.timestamp < b.timestamp) ? -1 : 1;
+        return (a.timestamp > b.timestamp) ? -1 : 1;
       } else {
         setSortByLikesFlg(true);
-        return (a.likes > b.likes) ? -1 : 1;
+        return (a.likes < b.likes) ? -1 : 1;
       }
       setResults(result);
       setAllTweets(result)
@@ -299,7 +299,7 @@ function App() {
           <span role="img" aria-label="hand-wave">
             👋
           </span>{" "}
-          WELCOME!
+          WELCOME
         </div>
         <div className='bio'>
           メッセージを作成して投稿をBlockchainに記録しよう
