@@ -220,6 +220,8 @@ function App() {
       } else {
         console.log("ethereum object not found");
       }
+      // 描画が自動的に切り替わらないのでとりあえずリロード
+      await window.location.reload();
     } catch (error) {
       console.log(error);
     }
