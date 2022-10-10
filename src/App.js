@@ -283,13 +283,13 @@ function App() {
               <button className="tweet_header">Wallet Connected</button>
             )}
             {currentAccount && (
-              <button className="tweet_header" onClick={post}>
+              <button className="tweetBox_tweetButton" onClick={post}>
                 投稿
               </button>
             )}
             {currentAccount && (
-              <div>
-                <textarea className="postForm"
+              <div className='tweetBox'>
+                <textarea className="tweetBoxInput"
                   name="tweetArea"
                   placeholder="メッセージを入力"
                   type="text"
