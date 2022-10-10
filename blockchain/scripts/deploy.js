@@ -12,7 +12,9 @@ const main = async () => {
   console.log("Deploying contracts with account: ", deployer.address);
 
   const Web3SNSContractFactory = await hre.ethers.getContractFactory("Web3SNS");
-  const Web3SNSContract = await Web3SNSContractFactory.deploy();
+  const Web3SNSContract = await Web3SNSContractFactory.deploy({
+    value: hre.ethers.utils.parseEther("0.001"),
+  });
 
   await Web3SNSContract.deployed();
 

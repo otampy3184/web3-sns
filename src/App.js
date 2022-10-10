@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers"
 import abi from "./abi/Web3SNS.json";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { IconButton } from '@mui/material';
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
   const [sortByLikesFlg, setSortByLikesFlg] = useState(true);
   const [results, setResults] = useState([]);
 
-  const contractAddress = "0xc0fA32eFb81199A1eCf9A6F55f8F80fDfc5DE7a6";
+  const contractAddress = "0x175204Ea760995d4F1c0A2443c38929242854AB8";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
@@ -230,6 +231,29 @@ function App() {
     }
   }
 
+  const tip = async (to) => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const Web3SNSContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+        const tipTxn = await Web3SNSContract.sendEther(to);
+        console.log("Minting...", tipTxn.hash);
+        await tipTxn.wait();
+        console.log("Minted ---", tipTxn.hash);
+      } else{ 
+        console.log("ethereum object not found");
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  }
+
   // timestamp順にソートする関数
   const sortByDate = async () => {
     const result = allTweets.sort(await function (a, b) {
@@ -323,6 +347,9 @@ function App() {
                   <div className='message'>Message:{post.message}</div>
                   <div>
                     <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon />{post.likes}</IconButton>
+                  </div>
+                  <div>
+                  <IconButton aria-label="favorite" size="small" color="primary" onClick={() => tip(post.address)}><PaymentIcon />Tip</IconButton>
                   </div>
                 </div>
               );

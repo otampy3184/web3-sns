@@ -18,6 +18,10 @@ contract Web3SNS {
         uint256 likes;
     }
 
+    constructor() payable {
+        console.log("construct success");
+    }
+
     // 全Postの配列
     Post[] allPosts;
 
@@ -102,9 +106,9 @@ contract Web3SNS {
         );
     }
 
-    function sendEther( address to, uint256 amount) public {
-        uint256 tipAmount = amount * 0.001 ether;
-        require (tipAmount <= address(msg.sender).balance, "Insufficient Funds");
+    function sendEther(address to) public payable {
+        uint256 tipAmount = 0.0001 ether;
+        require (tipAmount <= address(this).balance, "Insufficient Funds");
         (bool success, ) = (to).call{value: tipAmount}("");
         require(success, "Failed to send tip");
     }
