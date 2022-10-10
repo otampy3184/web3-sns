@@ -12,6 +12,9 @@ function App() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
   const [allTweets, setAllTweets] = useState([]);
+  const [sortByDateFlg, setSortByDateFlg] = useState(true);
+  const [sortByLikesFlg, setSortByLikesFlg] = useState(true);
+  const [results, setResults] = useState([]);
 
   const contractAddress = "0xc0fA32eFb81199A1eCf9A6F55f8F80fDfc5DE7a6";
   const contractABI = abi.abi;
@@ -227,6 +230,36 @@ function App() {
     }
   }
 
+  // timestamp順にソートする関数
+  const sortByDate = async () => {
+    const result = allTweets.sort(await function (a, b) {
+      if (sortByDateFlg === true) {
+        setSortByDateFlg(false);
+        return (a.timestamp < b.timestamp) ? -1 : 1;
+      } else {
+        setSortByDateFlg(true);
+        return (a.timestamp > b.timestamp) ? -1 : 1;
+      }
+    });
+    setResults(result);
+    setAllTweets(result);
+  }
+
+  // いいね数順にソートする関数
+  const sortByLikes = async () => {
+    const result = allTweets.sort(await function (a, b) {
+      if (sortByLikesFlg === true) {
+        setSortByLikesFlg(false);
+        return (a.timestamp < b.timestamp) ? -1 : 1;
+      } else {
+        setSortByLikesFlg(true);
+        return (a.likes > b.likes) ? -1 : 1;
+      }
+      setResults(result);
+      setAllTweets(result)
+    })
+  }
+
   return (
     <div className="App">
       <div className="header">
@@ -240,47 +273,57 @@ function App() {
             </h2>
             {/* ウォレットコネクトのボタン */}
             {!currentAccount && (
+              <div className="tweetHeader">
               <button className="tweetButton" onClick={connectWallet}>
                 Connect Wallet
               </button>
+              </div>
             )}
             {currentAccount && (
-              <button className="tweetButton">Wallet Connected</button>
+              <button className="tweet_header">Wallet Connected</button>
             )}
             {currentAccount && (
-              <button className="tweetButton" onClick={post}>
+              <button className="tweet_header" onClick={post}>
                 投稿
               </button>
             )}
             {currentAccount && (
-              <textarea className="postForm"
-                name="tweetArea"
-                placeholder="メッセージを入力"
-                type="text"
-                id="tweet"
-                value={tweetValue}
-                onChange={(e) => setTweetValue(e.target.value)}
-              />
+              <div>
+                <textarea className="postForm"
+                  name="tweetArea"
+                  placeholder="メッセージを入力"
+                  type="text"
+                  id="tweet"
+                  value={tweetValue}
+                  onChange={(e) => setTweetValue(e.target.value)}
+                />
+              </div>
             )}
-            {currentAccount && 
+            {currentAccount && (
+              <div className="sort">
+                <button className="sortButton" onClick={sortByDate}>sort Date</button>
+                <button className="sortButton" onClick={sortByLikes}>sort LikeCount</button>
+              </div>
+            )}
+            {currentAccount &&
               allTweets
                 .slice(0)
                 .reverse()
                 .map((post, index) => {
-                return (
-                  <div className="tweet" key={index}>
-                    <div>#{post.postId}</div>
-                    <div>From:{post.address}</div>
-                    <div>Time:{post.timestamp}</div>
-                    <div>Message:{post.message}</div>
-                    <div>Likes:{post.likes}</div>
-                    <div>
-                      <IconButton aria-label="favorite" size="small" color="primary"  onClick={()=>like(post.postId)}><FavoriteBorderIcon /></IconButton>
+                  return (
+                    <div className="tweet" key={index}>
+                      <div>#{post.postId}</div>
+                      <div>From:{post.address}</div>
+                      <div>Time:{post.timestamp}</div>
+                      <div>Message:{post.message}</div>
+                      <div>Likes:{post.likes}</div>
+                      <div>
+                        <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon /></IconButton>
+                      </div>
                     </div>
-                  </div>
-                )
-              })
-              }
+                  )
+                })
+            }
           </div>
         </div>
       </div>
