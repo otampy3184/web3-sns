@@ -261,71 +261,72 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <div className="header">
-        <h1>Social Network Service 3.0</h1>
-      </div>
-      <div className="data-container">
-        <div>
-          <div className="data-container">
-            <h2>
-              Ethereum walletを接続後、メッセージを入力して投稿してください
-            </h2>
-            {/* ウォレットコネクトのボタン */}
-            {!currentAccount && (
-              <div className="tweetHeader">
-              <button className="tweetButton" onClick={connectWallet}>
-                Connect Wallet
-              </button>
-              </div>
-            )}
-            {currentAccount && (
-              <button className="tweet_header">Wallet Connected</button>
-            )}
-            {currentAccount && (
-              <button className="tweetBox_tweetButton" onClick={post}>
-                投稿
-              </button>
-            )}
-            {currentAccount && (
-              <div className='tweetBox'>
-                <textarea className="tweetBoxInput"
-                  name="tweetArea"
-                  placeholder="メッセージを入力"
-                  type="text"
-                  id="tweet"
-                  value={tweetValue}
-                  onChange={(e) => setTweetValue(e.target.value)}
-                />
-              </div>
-            )}
-            {currentAccount && (
-              <div className="sort">
-                <button className="sortButton" onClick={sortByDate}>sort Date</button>
-                <button className="sortButton" onClick={sortByLikes}>sort LikeCount</button>
-              </div>
-            )}
-            {currentAccount &&
-              allTweets
-                .slice(0)
-                .reverse()
-                .map((post, index) => {
-                  return (
-                    <div className="tweet" key={index}>
-                      <div>#{post.postId}</div>
-                      <div>From:{post.address}</div>
-                      <div>Time:{post.timestamp}</div>
-                      <div>Message:{post.message}</div>
-                      <div>Likes:{post.likes}</div>
-                      <div>
-                        <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon /></IconButton>
-                      </div>
-                    </div>
-                  )
-                })
-            }
-          </div>
+    <div className='mainContainer'>
+      <div className='dataContainer'>
+        <div className='header'>
+          <span role="img" aria-label="hand-wave">
+            👋
+          </span>{" "}
+          WELCOME!
         </div>
+        <div className='bio'>
+          メッセージを作成して投稿をBlockchainに記録しよう
+        </div>
+        <br />
+        {/* ウォレットコネクトのボタン */}
+        {!currentAccount && (
+          <button className="waveButton" onClick={connectWallet}>
+            Connect Wallet
+          </button>
+        )}
+
+        {currentAccount && (
+          <textarea
+            className='textArea'
+            name="tweetArea"
+            placeholder="メッセージを入力"
+            type="text"
+            id="tweet"
+            value={tweetValue}
+            onChange={(e) => setTweetValue(e.target.value)}
+          />
+        )}
+        {currentAccount && (
+          <button className="waveButton" onClick={post}>
+            投稿
+          </button>
+        )}
+        {currentAccount && (
+          <div className="sort">
+            <button className="sortButton" onClick={sortByDate}>sort Date</button>
+            <button className="sortButton" onClick={sortByLikes}>sort LikeCount</button>
+          </div>
+        )}
+        {currentAccount &&
+          allTweets
+            .slice(0)
+            .reverse()
+            .map((post, index) => {
+              return (
+                <div
+                  key={index}
+                  style={{
+                    width: "600px",
+                    backgroundColor: "#F8F8FF",
+                    marginTop: "16px",
+                    padding: "8px",
+                  }}
+                >
+                  <div>#{post.postId}</div>
+                  <div>@{post.address}</div>
+                  <div>Posted at:{post.timestamp}</div>
+                  <div className='message'>Message:{post.message}</div>
+                  <div>
+                    <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon />{post.likes}</IconButton>
+                  </div>
+                </div>
+              );
+            })}
       </div>
 
     </div>
