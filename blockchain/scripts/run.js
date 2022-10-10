@@ -7,6 +7,12 @@ const main = async() => {
     await tweetTxn.wait();
     const tweetTxn2 = await tweetContract.tweet("test post#2");
     await tweetTxn2.wait();
+    const likeTxn = await tweetContract.like(1);
+    await likeTxn.wait();
+    const likeTxn2 = await tweetContract.like(1);
+    await likeTxn2.wait();
+    const dislikeTxn = await tweetContract.dislike(1);
+    await dislikeTxn.wait();
     let allPosts = await tweetContract.getAllPosts();
     console.log(allPosts);
 };
