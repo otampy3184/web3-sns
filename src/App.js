@@ -11,9 +11,8 @@ function App() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
   const [allTweets, setAllTweets] = useState([]);
-  const [like, setLike] = useState({ count: 0, liked: false });
 
-  const contractAddress = "0x4C2d03059aDd7adf285CE9C3BA6ea78fcf49d6b7";
+  const contractAddress = "0x9Aff87e6c9fD67F4f08186cd3a8A3Af0CCdA7edC";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
@@ -138,13 +137,26 @@ function App() {
   useEffect(() => {
     let web3SNSContract;
 
+    // Ethereumから飛んでくるEventから、Likeを更新した投稿を再構築
+    // Json配列の特定部分だけ更新できるようにしたい、、、
     const onNewLike = (postId, from, message, timestamp, likes) => {
-      console.log("NewLike", likes.toNumber());
+      // Mapとして管理しているpostIdと、Eventとして返ってくるpostIdは同一にしているためそのままIndex更新用に使う
+      const updateIndex = postId.toNumber()
+      // Eventとして取得した値から、特定Postを一から再生成する
+      const newPost = {
+        postId: postId.toNumber(),
+        address: from,
+        message: message,
+        timestamp: timestamp.toNumber(),
+        likes: likes.toNumber(),
+      }
+      // Index番号で検索をかけ、対象Indexの要素のみnewPostに入れ替える
       setAllTweets(
-        allTweets.map((tweet, index) => (index === postId ? likes.toNumber() : tweet))
+        allTweets.map((tweet, index) => (index === updateIndex ? newPost : tweet))
       );
     }
 
+    // EthereumからのEvent発火を監視
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -156,6 +168,7 @@ function App() {
       )
       web3SNSContract.on("NewLike", onNewLike);
     }
+    // メモリーリーク防止用
     return () => {
       if (web3SNSContract) {
         web3SNSContract.off("NewLike", onNewLike);
@@ -163,6 +176,7 @@ function App() {
     }
   }, []);
 
+  // 新規投稿用関数
   const post = async () => {
     try {
       const { ethereum } = window;
@@ -186,7 +200,8 @@ function App() {
     }
   };
 
-  const doLikeCountsUp = async (_index) => {
+  // いいね用関数
+  const like = async (_index) => {
     try {
       const { ethereum } = window;
       if (ethereum) {
@@ -262,7 +277,7 @@ function App() {
                     <div>Message:{post.message}</div>
                     <div>Likes:{post.likes}</div>
                     <div>
-                      <button onClick={()=>doLikeCountsUp(post.postId)}>Like</button>
+                      <button onClick={()=>like(post.postId)}>Like</button>
                     </div>
                   </div>
                 )
