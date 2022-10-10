@@ -102,6 +102,13 @@ contract Web3SNS {
         );
     }
 
+    function sendEther( address to, uint256 amount) public {
+        uint256 tipAmount = amount * 0.001 ether;
+        require (tipAmount <= address(msg.sender).balance, "Insufficient Funds");
+        (bool success, ) = (to).call{value: tipAmount}("");
+        require(success, "Failed to send tip");
+    }
+
     // 全投稿を確認
     function getAllPosts() public view returns (Post[] memory) {
         return allPosts;
