@@ -13,6 +13,10 @@ const main = async() => {
     await likeTxn2.wait();
     let allPosts = await tweetContract.getAllPosts();
     console.log(allPosts);
+    let post1 = await tweetContract.getSpecificPost1(1);
+    let post2 = await tweetContract.getSpecificPost2(1);
+    console.log("post1(1):", post1);
+    console.log("post2(1):", post2);
 };
 
 const runMain = async() => {

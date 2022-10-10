@@ -53,7 +53,7 @@ contract Web3SNS {
 
         // 新規Postを配列に渡し、マッピングに登録する
         allPosts.push(newPost);
-        TweetIdToPost[newPostId] = newPost;
+        //TweetIdToPost[newPostId] = newPost;
 
         // 動作確認
         console.log("tweet by %s w/ ID %s has been posted", msg.sender, newPostId);
@@ -65,14 +65,15 @@ contract Web3SNS {
 
     // Postへのいいね機能
     function likesIncrement(uint256 _index) public {
-        TweetIdToPost[_index].likes++;
+        //TweetIdToPost[_index].likes++;
+        allPosts[_index].likes++;
         console.log("New Likes Count:", TweetIdToPost[_index].likes);
         emit NewLike(
-            TweetIdToPost[_index].postId, 
-            TweetIdToPost[_index].from,
-            TweetIdToPost[_index].message,
-            TweetIdToPost[_index].timestamp,
-            TweetIdToPost[_index].likes
+            allPosts[_index].postId, 
+            allPosts[_index].from,
+            allPosts[_index].message,
+            allPosts[_index].timestamp,
+            allPosts[_index].likes
          );
     }
 
@@ -85,4 +86,12 @@ contract Web3SNS {
     function getAllPosts() public view returns (Post[] memory) {
         return allPosts;
     }
+
+    // function getSpecificPost1(uint256 _index) public view returns (Post memory) {
+    //     return TweetIdToPost[_index];
+    // }
+
+    // function getSpecificPost2(uint256 _index) public view returns (Post memory) {
+    //     return allPosts[_index];
+    // } 
 }
