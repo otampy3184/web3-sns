@@ -10,7 +10,7 @@ contract Web3SNS {
     Counters.Counter private _postIds;
 
     // Postの構造体
-    struct Post{
+    struct Post {
         uint256 postId;
         address from;
         string message;
@@ -21,14 +21,24 @@ contract Web3SNS {
     // 全Postの配列
     Post[] allPosts;
 
-    // Postごとのいいね数を保存するマッピング
-    //mapping (uint256 => uint256) public LikesCount;
     // PostをIdで管理するマッピング
-    mapping (uint256 => Post) public TweetIdToPost;
+    mapping(uint256 => Post) public TweetIdToPost;
 
     // 新しいPostがおこなわれた際に呼ばれるイベント
-    event NewPost(uint256 postId, address from, string message, uint256 timestamp, uint256 likes);
-    event NewLike(uint256 postId, address from, string message, uint256 timestamp, uint256 likes);
+    event NewPost(
+        uint256 postId,
+        address from,
+        string message,
+        uint256 timestamp,
+        uint256 likes
+    );
+    event NewLike(
+        uint256 postId,
+        address from,
+        string message,
+        uint256 timestamp,
+        uint256 likes
+    );
 
     // 新規の投稿機能
     function tweet(string memory _message) public {
@@ -41,9 +51,9 @@ contract Web3SNS {
         uint256 _timestamp = block.timestamp;
 
         uint256 initialLikes = 0;
-        
+
         // 新規Postの作成
-        Post memory newPost =Post({
+        Post memory newPost = Post({
             postId: newPostId,
             from: msg.sender,
             message: _message,
@@ -53,10 +63,13 @@ contract Web3SNS {
 
         // 新規Postを配列に渡し、マッピングに登録する
         allPosts.push(newPost);
-        //TweetIdToPost[newPostId] = newPost;
 
         // 動作確認
-        console.log("tweet by %s w/ ID %s has been posted", msg.sender, newPostId);
+        console.log(
+            "tweet by %s w/ ID %s has been posted",
+            msg.sender,
+            newPostId
+        );
 
         _postIds.increment();
 
@@ -69,29 +82,28 @@ contract Web3SNS {
         allPosts[_index].likes++;
         console.log("New Likes Count:", TweetIdToPost[_index].likes);
         emit NewLike(
-            allPosts[_index].postId, 
+            allPosts[_index].postId,
             allPosts[_index].from,
             allPosts[_index].message,
             allPosts[_index].timestamp,
             allPosts[_index].likes
-         );
+        );
     }
 
-    // function likesDiscrement(uint256 _index) public {
-    //     TweetIdToPost[_index].likes--;
-    //     console.log("New Likes Count:", TweetIdToPost[_index].likes);
-    // }
+    function likesDiscrement(uint256 _index) public {
+        TweetIdToPost[_index].likes--;
+        console.log("New Likes Count:", TweetIdToPost[_index].likes);
+        emit NewLike(
+            allPosts[_index].postId,
+            allPosts[_index].from,
+            allPosts[_index].message,
+            allPosts[_index].timestamp,
+            allPosts[_index].likes
+        );
+    }
 
     // 全投稿を確認
     function getAllPosts() public view returns (Post[] memory) {
         return allPosts;
     }
-
-    // function getSpecificPost1(uint256 _index) public view returns (Post memory) {
-    //     return TweetIdToPost[_index];
-    // }
-
-    // function getSpecificPost2(uint256 _index) public view returns (Post memory) {
-    //     return allPosts[_index];
-    // } 
 }
