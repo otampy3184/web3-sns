@@ -24,7 +24,12 @@
   margin-top: 16px;
 }
 
+.icons{
+  overflow: hidden;
+}
+
 .waveButton {
+  float: right;
   background-color: var(--twitter-color) !important;
   border: none !important;
   color: white !important;
@@ -38,6 +43,10 @@
   background: -webkit-linear-gradient(left, #4facfe, #00f2fe);
   background-size: 100% 100%;
   animation: gradient-animation 10s ease infinite;
+}
+
+.loading{
+  float: left;
 }
 
 .message {

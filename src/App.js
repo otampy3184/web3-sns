@@ -6,10 +6,12 @@ import abi from "./abi/Web3SNS.json";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import PaymentIcon from '@mui/icons-material/Payment';
 import { IconButton } from '@mui/material';
+import Loading from "./components/Loading"
 
 function App() {
   const [likesCount, setLikesCount] = useState("");
   const [cantLike, setCantLike] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
   const [allTweets, setAllTweets] = useState([]);
@@ -195,8 +197,10 @@ function App() {
         );
         const tweetTxn = await web3SNSContract.tweet(tweetValue);
         console.log("Minting...", tweetTxn.hash);
+        setIsLoading(true);
         await tweetTxn.wait();
         console.log("Minted -- ", tweetTxn.hash);
+        setIsLoading(false);
       } else {
         console.log("Ethereum object not found");
       }
@@ -219,8 +223,10 @@ function App() {
         )
         const likeTxn = await web3SNSContract.likesIncrement(_index);
         console.log("Minting...", likeTxn.hash);
+        setIsLoading(true);
         await likeTxn.wait();
         console.log("Minted ---", likeTxn.hash);
+        setIsLoading(false);
       } else {
         console.log("ethereum object not found");
       }
@@ -244,12 +250,14 @@ function App() {
         );
         const tipTxn = await Web3SNSContract.sendEther(to);
         console.log("Minting...", tipTxn.hash);
+        setIsLoading(true);
         await tipTxn.wait();
         console.log("Minted ---", tipTxn.hash);
-      } else{ 
+        setIsLoading(false);
+      } else {
         console.log("ethereum object not found");
       }
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
   }
@@ -303,7 +311,6 @@ function App() {
             Connect Wallet
           </button>
         )}
-
         {currentAccount && (
           <textarea
             className='textArea'
@@ -315,11 +322,16 @@ function App() {
             onChange={(e) => setTweetValue(e.target.value)}
           />
         )}
-        {currentAccount && (
-          <button className="waveButton" onClick={post}>
-            投稿
-          </button>
-        )}
+        <div className='icons'>
+          <div className='loading'>
+          {isLoading && <Loading />}
+          </div>
+          {currentAccount && (
+            <button className="waveButton" onClick={post}>
+              投稿
+            </button>
+          )}
+        </div>
         {currentAccount && (
           <div className="sort">
             <button className="sortButton" onClick={sortByDate}>sort Date</button>
@@ -349,7 +361,7 @@ function App() {
                     <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon />{post.likes}</IconButton>
                   </div>
                   <div>
-                  <IconButton aria-label="favorite" size="small" color="primary" onClick={() => tip(post.address)}><PaymentIcon />Tip</IconButton>
+                    <IconButton aria-label="favorite" size="small" color="primary" onClick={() => tip(post.address)}><PaymentIcon />Tip</IconButton>
                   </div>
                 </div>
               );
