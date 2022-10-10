@@ -3,15 +3,20 @@ import './App.css';
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers"
 import abi from "./abi/Web3SNS.json";
+import Post from "./components/Post";
 
 function App() {
+  const [likesCount, setLikesCount] = useState("");
+  const [cantLike, setCantLike] = useState(false);
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
   const [allTweets, setAllTweets] = useState([]);
+  const [like, setLike] = useState({ count: 0, liked: false });
 
-  const contractAddress = "0x600b263c2D18d686749748bf1B520318f1602d10";
+  const contractAddress = "0x4C2d03059aDd7adf285CE9C3BA6ea78fcf49d6b7";
   const contractABI = abi.abi;
 
+  // Walletの接続状況をチェック
   const checkIfWalletIsConnected = async () => {
     try {
       const { ethereum } = window;
@@ -36,10 +41,12 @@ function App() {
     }
   };
 
+  // Walletの接続状態を監視
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
 
+  // Walletに接続
   const connectWallet = async () => {
     try {
       const { ethereum } = window;
@@ -57,6 +64,7 @@ function App() {
     }
   };
 
+  // 全Postを取得
   const getAllTweets = async () => {
     const { ethereum } = window;
     try {
@@ -70,15 +78,19 @@ function App() {
         );
 
         const posts = await web3SNSContract.getAllPosts();
-
+        console.log("get all post ")
         const postsCleaned = posts.map((post) => {
           return {
+            postId: post.postId.toNumber(),
             address: post.from,
-            timestamp: post.timestamp,
             message: post.message,
+            timestamp: post.timestamp.toNumber(),
+            likes: post.likes.toNumber(),
           };
         })
         setAllTweets(postsCleaned);
+        console.log("set all posts");
+        console.log(postsCleaned);
       } else {
         console.log("Ethereum object not found");
       }
@@ -87,18 +99,20 @@ function App() {
     }
   };
 
+  // 新規Postの追加状況を監視
   useEffect(() => {
     let web3SNSContract;
 
-    const onNewPost = (from, message, timestamp, likes) => {
-      console.log("NewPost", from, message, timestamp, likes);
+    const onNewPost = (postId, from, message, timestamp, likes) => {
+      console.log("NewPost", postId, from, message, timestamp, likes);
       setAllTweets((prevState) => [
         ...prevState,
         {
+          postId: postId.toNumber(),
           address: from,
           message: message,
-          timestamp: new Date(timestamp * 1000),
-          likes: likes,
+          timestamp: timestamp.toNumber(),
+          likes: likes.toNumber(),
         },
       ]);
     };
@@ -119,6 +133,34 @@ function App() {
         web3SNSContract.off("NewPost", onNewPost);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    let web3SNSContract;
+
+    const onNewLike = (postId, from, message, timestamp, likes) => {
+      console.log("NewLike", likes.toNumber());
+      setAllTweets(
+        allTweets.map((tweet, index) => (index === postId ? likes.toNumber() : tweet))
+      );
+    }
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      web3SNSContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      )
+      web3SNSContract.on("NewLike", onNewLike);
+    }
+    return () => {
+      if (web3SNSContract) {
+        web3SNSContract.off("NewLike", onNewLike);
+      }
+    }
   }, []);
 
   const post = async () => {
@@ -144,84 +186,92 @@ function App() {
     }
   };
 
-  const LikeButton = () => {
-    const [ like, setLike ] = useState({ count: 0, liked: false });
-
-    const onClick = () => {
-        setLike({
-            count: like.count + (like.liked ? -1 : 1),
-            liked: !like.liked
-        });
+  const doLikeCountsUp = async (_index) => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const web3SNSContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        )
+        const likeTxn = await web3SNSContract.likesIncrement(_index);
+        console.log("Minting...", likeTxn.hash);
+        await likeTxn.wait();
+        console.log("Minted ---", likeTxn.hash);
+      } else {
+        console.log("ethereum object not found");
+      }
+    } catch (error) {
+      console.log(error);
     }
-
-    return (
-        <>
-            <button onClick={onClick}>
-            {like.liked ? '✔' : ''}❤️
-            </button>
-            {like.count}
-        </>
-    );
   }
 
   return (
-    <div className="mainContariner">
-      <div className="dataContariner">
-        <div className="header">
-          Welcome....
-        </div>
-        <div className="bio">
-          Ethereum walletを接続後、メッセージを入力して投稿してください
-        </div>
-        <br />
-        {/* ウォレットコネクトのボタン */}
-        {!currentAccount && (
-          <button className="tweetButton" onClick={connectWallet}>
-            Connect Wallet
-          </button>
-        )}
-        <br />
-        {currentAccount && (
-          <button className="tweetButton">Wallet Connected</button>
-        )}
-        {currentAccount && (
-          <button className="tweetButton" onClick={post}>
-            投稿
-          </button>
-        )}
-        <br />
-        {currentAccount && (
-          <textarea className="postForm"
-            name="tweetArea"
-            placeholder="メッセージを入力"
-            type="text"
-            id="tweet"
-            value={tweetValue}
-            onChange={(e) => setTweetValue(e.target.value)}
-          />
-        )}
-        {currentAccount &&
-          allTweets
-            .slice(0)
-            .reverse()
-            .map((post, index) => {
-              return (
-                <div className="tweet"
-                  key={index}
-                  style={{
-                    backgroundColor: "#F8F8FF",
-                    marginTop: "16px",
-                    padding: "8px",
-                  }}
-                >
-                  <div>Address: {post.address}</div>
-                  <div>Time: {post.timestamp.toString()}</div>
-                  <div>Message: {post.message}</div>
-                  <LikeButton />
-                </div>
-              );
-            })}
+    <div className="App">
+      <div className="header">
+        <h1>Social Network Service 3.0</h1>
       </div>
+      <div className="data-container">
+        <div>
+          <div className="data-container">
+            <h2>
+              Ethereum walletを接続後、メッセージを入力して投稿してください
+            </h2>
+            {/* ウォレットコネクトのボタン */}
+            {!currentAccount && (
+              <button className="tweetButton" onClick={connectWallet}>
+                Connect Wallet
+              </button>
+            )}
+            {currentAccount && (
+              <button className="tweetButton">Wallet Connected</button>
+            )}
+            {currentAccount && (
+              <button className="tweetButton" onClick={post}>
+                投稿
+              </button>
+            )}
+            {currentAccount && (
+              <textarea className="postForm"
+                name="tweetArea"
+                placeholder="メッセージを入力"
+                type="text"
+                id="tweet"
+                value={tweetValue}
+                onChange={(e) => setTweetValue(e.target.value)}
+              />
+            )}
+            {/*
+                    allTweets.map((post) => (
+                            <Post key={post.postId} data={{ id: post.postId, from: post.from, timestamp: post.timestamp, message: post.message, likes: post.likes }} />
+                    ))
+                    } 
+            */}
+            {currentAccount && 
+              allTweets
+                .slice(0)
+                .reverse()
+                .map((post, index) => {
+                return (
+                  <div key={index}>
+                    <div>From:{post.address}</div>
+                    <div>Time:{post.timestamp}</div>
+                    <div>Message:{post.message}</div>
+                    <div>Likes:{post.likes}</div>
+                    <div>
+                      <button onClick={()=>doLikeCountsUp(post.postId)}>Like</button>
+                    </div>
+                  </div>
+                )
+              })
+              }
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
