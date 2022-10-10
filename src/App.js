@@ -3,7 +3,8 @@ import './App.css';
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers"
 import abi from "./abi/Web3SNS.json";
-import Post from "./components/Post";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { IconButton } from '@mui/material';
 
 function App() {
   const [likesCount, setLikesCount] = useState("");
@@ -12,7 +13,7 @@ function App() {
   const [tweetValue, setTweetValue] = useState("");
   const [allTweets, setAllTweets] = useState([]);
 
-  const contractAddress = "0x9Aff87e6c9fD67F4f08186cd3a8A3Af0CCdA7edC";
+  const contractAddress = "0xc0fA32eFb81199A1eCf9A6F55f8F80fDfc5DE7a6";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
@@ -259,25 +260,20 @@ function App() {
                 onChange={(e) => setTweetValue(e.target.value)}
               />
             )}
-            {/*
-                    allTweets.map((post) => (
-                            <Post key={post.postId} data={{ id: post.postId, from: post.from, timestamp: post.timestamp, message: post.message, likes: post.likes }} />
-                    ))
-                    } 
-            */}
             {currentAccount && 
               allTweets
                 .slice(0)
                 .reverse()
                 .map((post, index) => {
                 return (
-                  <div key={index}>
+                  <div className="tweet" key={index}>
+                    <div>#{post.postId}</div>
                     <div>From:{post.address}</div>
                     <div>Time:{post.timestamp}</div>
                     <div>Message:{post.message}</div>
                     <div>Likes:{post.likes}</div>
                     <div>
-                      <button onClick={()=>like(post.postId)}>Like</button>
+                      <IconButton aria-label="favorite" size="small" color="primary"  onClick={()=>like(post.postId)}><FavoriteBorderIcon /></IconButton>
                     </div>
                   </div>
                 )
