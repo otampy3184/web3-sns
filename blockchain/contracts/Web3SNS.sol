@@ -27,8 +27,8 @@ contract Web3SNS {
     mapping (uint256 => Post) public TweetIdToPost;
 
     // 新しいPostがおこなわれた際に呼ばれるイベント
-    event NewPost(address from, string message, uint256 timestamp, uint256 likes);
-    event NewLike(uint256 postId );
+    event NewPost(uint256 postId, address from, string message, uint256 timestamp, uint256 likes);
+    event NewLike(uint256 postId, uint256 likes);
 
     // 新規の投稿機能
     function tweet(string memory _message) public {
@@ -67,14 +67,19 @@ contract Web3SNS {
     function likesIncrement(uint256 _index) public returns(uint256){
         TweetIdToPost[_index].likes++;
         console.log("New Likes Count:", TweetIdToPost[_index].likes);
-        emit NewLike(_index);
-        return TweetIdToPost[_index].likes;
+        emit NewLike(
+            TweetIdToPost[_index].postId, 
+            TweetIdToPost[_index].likes
+         );
     }
 
     function likesDiscrement(uint256 _index) public returns(uint256){
         TweetIdToPost[_index].likes--;
-        console.log("New Likes Count:", TweetIdToPost[_index].
-        emit NewLike(_index);
+        console.log("New Likes Count:", TweetIdToPost[_index].likes);
+        emit NewLike(
+            TweetIdToPost[_index].postId, 
+            TweetIdToPost[_index].likes
+         );
     }
 
     // 全投稿を確認
