@@ -10,27 +10,21 @@ const main = async () => {
     await tweetTxn.wait();
     const tweetTxn2 = await tweetContract.tweet("test post#2");
     await tweetTxn2.wait();
-    const likeTxn = await tweetContract.likesIncrement(1);
+    const tweetTxn3 = await tweetContract.tweet("test post#3");
+    await tweetTxn3.wait();
+    const tweetTxn4 = await tweetContract.tweet("test post#4");
+    await tweetTxn4.wait();
+    const likeTxn = await tweetContract.likesIncrement(0);
     await likeTxn.wait();
-    const likeTxn2 = await tweetContract.likesIncrement(1);
+    const likeTxn2 = await tweetContract.likesIncrement(3);
     await likeTxn2.wait();
-    let allPosts = await tweetContract.getAllPosts();
-    console.log(allPosts);
-    // let post1 = await tweetContract.getSpecificPost1(1);
-    // let post2 = await tweetContract.getSpecificPost2(1);
-    // console.log("post1(1):", post1);
-    // console.log("post2(1):", post2);
-    [Signer1, Signer2] = await hre.ethers.getSigners();
-    console.log(Signer1.address, Signer2.address)
-    const address1 = Signer1.address;
-    const address2 = Signer2.address;
-    let Balance1 = await hre.ethers.provider.getBalance(address1);
-    console.log(Balance1);
 
-    const sendTxn = await tweetContract.sendEther(address1);
-    await sendTxn.wait()
-    Balance1 = await hre.ethers.provider.getBalance(address1);
-    console.log(Balance1);
+    const postCount = await tweetContract.getPostsCount();
+    console.log(postCount);
+
+    const posts = await tweetContract.getAllPosts();
+    console.log(posts);
+
 };
 
 const runMain = async () => {
