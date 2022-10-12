@@ -10,14 +10,14 @@ import Loading from "./components/Loading"
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
+  const [sortByDateFlg, setSortByDateFlg] = useState(true);
+  const [sortByLikesFlg, setSortByLikesFlg] = useState(true);
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
   const [allTweets, setAllTweets] = useState([]);
-  const [sortByDateFlg, setSortByDateFlg] = useState(true);
-  const [sortByLikesFlg, setSortByLikesFlg] = useState(true);
   const [results, setResults] = useState([]);
 
-  const contractAddress = "0x390C982e2Fd207eb9a3d42C6c768f953cf3DCDFc";
+  const contractAddress = "0x3c33d996e0D9D3C05C6883aC14343DAe5bf4Ec2C";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
@@ -30,11 +30,12 @@ function App() {
       } else {
         console.log("We have the ethereum object", ethereum);
       }
-      /* ユーザーのウォレットへのアクセスが許可されているかどうかを確認 */
+      // ユーザーのウォレットアクセスが許可されているか確認
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length !== 0) {
         const account = accounts[0];
         console.log("Found an authorized account:", account);
+        // アカウントをStateに保存し、全Postを取得する
         setCurrentAccount(account);
         getAllTweets();
       } else {
@@ -82,7 +83,8 @@ function App() {
         );
 
         const posts = await web3SNSContract.getAllPosts();
-        console.log("get all post ")
+
+        // 画面表示用に整理する
         const postsCleaned = posts.map((post) => {
           return {
             postId: post.postId.toNumber(),
@@ -94,8 +96,6 @@ function App() {
           };
         })
         setAllTweets(postsCleaned);
-        console.log("set all posts");
-        console.log(postsCleaned);
       } else {
         console.log("Ethereum object not found");
       }
@@ -110,12 +110,14 @@ function App() {
 
     const onNewPost = (postId, from, message, timestamp, likes, likeFlag) => {
       console.log("NewPost", postId, from, message, timestamp, likes, likeFlag);
+      // Eventから渡された情報をStateに追加する
       setAllTweets((prevState) => [
         ...prevState,
         {
           postId: postId.toNumber(),
           address: from,
           message: message,
+          // UTC表示に対応させる
           timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
           likes: likes.toNumber(),
           likeFlag: likeFlag,
@@ -123,6 +125,7 @@ function App() {
       ]);
     };
 
+    // Eventの発生を監視する
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -141,6 +144,7 @@ function App() {
     };
   }, []);
 
+  // いいね情報の更新を監視
   useEffect(() => {
     let web3SNSContract;
 
@@ -164,7 +168,7 @@ function App() {
       );
     }
 
-    // EthereumからのEvent発火を監視
+    // Eventの発生を監視する
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -183,8 +187,6 @@ function App() {
       }
     }
   }, []);
-
-  
 
   // 新規投稿用関数
   const post = async () => {
@@ -224,7 +226,9 @@ function App() {
           contractABI,
           signer
         )
-        const likeTxn = await web3SNSContract.likesIncrement(_index);
+        const likeTxn = await web3SNSContract.likesIncrement(_index, {
+          gasLimit: 3000000,
+        });
         console.log("Minting...", likeTxn.hash);
         setIsLoading(true);
         await likeTxn.wait();
@@ -240,6 +244,7 @@ function App() {
     }
   }
 
+  // いいね解除用関数
   const unlike = async (_index) => {
     try {
       const { ethereum } = window;
@@ -251,7 +256,9 @@ function App() {
           contractABI,
           signer
         )
-        const likeTxn = await web3SNSContract.likesDiscrement(_index);
+        const likeTxn = await web3SNSContract.likesDiscrement(_index, {
+          gasLimit: 300000,
+        });
         console.log("Minting...", likeTxn.hash);
         setIsLoading(true);
         await likeTxn.wait();
@@ -260,13 +267,13 @@ function App() {
       } else {
         console.log("ethereum object not found");
       }
-      // 描画が自動的に切り替わらないのでとりあえずリロード
       await window.location.reload();
     } catch (error) {
       console.log(error);
     }
   }
 
+  // ユーザーへのTip送金関数
   const tip = async (to) => {
     try {
       const { ethereum } = window;
