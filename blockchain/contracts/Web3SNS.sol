@@ -94,17 +94,19 @@ contract Web3SNS {
         }
         // いいね情報の更新
         allPosts[_index].likes++;
-        
-        allPosts[_index].likeFlag = true;
         userToLikedList[msg.sender].push(_index);
 
+        // Flag情報を保持させないため、Response用のPost配列を作る
+        Post[] memory resPosts;
+        resPosts[_index].likeFlag = true;
+
         emit NewLike(
-            allPosts[_index].postId,
-            allPosts[_index].from,
-            allPosts[_index].message,
-            allPosts[_index].timestamp,
-            allPosts[_index].likes,
-            allPosts[_index].likeFlag
+            resPosts[_index].postId,
+            resPosts[_index].from,
+            resPosts[_index].message,
+            resPosts[_index].timestamp,
+            resPosts[_index].likes,
+            resPosts[_index].likeFlag
         );
     }
 
@@ -112,7 +114,6 @@ contract Web3SNS {
     function likesDiscrement(uint256 _index) public {
         // いいね情報の更新
         allPosts[_index].likes--;
-        allPosts[_index].likeFlag = false;
 
         // 削除対象のいいねListのIndexを線形探索で探す
         uint256 listLength = userToLikedList[msg.sender].length;
@@ -128,18 +129,17 @@ contract Web3SNS {
         userToLikedList[msg.sender][target] = userToLikedList[msg.sender][listLength - 1];
         userToLikedList[msg.sender].pop();
 
-        console.log(
-            "New Likes Count:%s by %s",
-            allPosts[_index].likes,
-            msg.sender
-        );
+        // Flag情報を保持させないため、Response用のPost配列を作る
+        Post[] memory resPosts;
+        resPosts[_index].likeFlag = false;
+
         emit NewLike(
-            allPosts[_index].postId,
-            allPosts[_index].from,
-            allPosts[_index].message,
-            allPosts[_index].timestamp,
-            allPosts[_index].likes,
-            allPosts[_index].likeFlag
+            resPosts[_index].postId,
+            resPosts[_index].from,
+            resPosts[_index].message,
+            resPosts[_index].timestamp,
+            resPosts[_index].likes,
+            resPosts[_index].likeFlag
         );
     }
 
