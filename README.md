@@ -2,7 +2,20 @@
 
 ## 概要
 
-EthereumのMetamaskアドレスをアカウントとして使用し、Blockchain上にTweetを投稿できる
+Ethereumkアドレスをアカウントとして使用し、Blockchain上にTweetを投稿できる
+
+## 利用技術・サービス
+
+```:
+Node.js v16.14.2
+npm v8.5.0
+Solidity 0.8.9
+Hardhat 2.11.2
+React.js 18.2.0
+Goerli test network
+Metamask
+Alchemy 
+```
 
 ## 機能一覧
 
@@ -16,3 +29,4 @@ EthereumのMetamaskアドレスをアカウントとして使用し、Blockchain
   - 「いいね！」をもう一度することで「いいね！」を取り消すことができる
 - グローバルタイムラインは、すべてのユーザーの投稿を見ることができる
   - ユーザーは、アップロード時間と「いいね！」の数に基づいて、タイムラインをソートすることができる
+- ユーザーは気に入った投稿の投稿者に対して少額のether tipを送ることができる
