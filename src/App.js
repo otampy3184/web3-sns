@@ -9,8 +9,6 @@ import { IconButton } from '@mui/material';
 import Loading from "./components/Loading"
 
 function App() {
-  const [likesCount, setLikesCount] = useState("");
-  const [cantLike, setCantLike] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentAccount, setCurrentAccount] = useState("");
   const [tweetValue, setTweetValue] = useState("");
@@ -19,7 +17,7 @@ function App() {
   const [sortByLikesFlg, setSortByLikesFlg] = useState(true);
   const [results, setResults] = useState([]);
 
-  const contractAddress = "0x756E389E40C97Bd15743529A31B59072949DB8f2";
+  const contractAddress = "0x390C982e2Fd207eb9a3d42C6c768f953cf3DCDFc";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
@@ -92,6 +90,7 @@ function App() {
             message: post.message,
             timestamp: (new Date(post.timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(post.timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
             likes: post.likes.toNumber(),
+            likeFlag: post.likeFlag,
           };
         })
         setAllTweets(postsCleaned);
@@ -109,8 +108,8 @@ function App() {
   useEffect(() => {
     let web3SNSContract;
 
-    const onNewPost = (postId, from, message, timestamp, likes) => {
-      console.log("NewPost", postId, from, message, timestamp, likes);
+    const onNewPost = (postId, from, message, timestamp, likes, likeFlag) => {
+      console.log("NewPost", postId, from, message, timestamp, likes, likeFlag);
       setAllTweets((prevState) => [
         ...prevState,
         {
@@ -119,6 +118,7 @@ function App() {
           message: message,
           timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
           likes: likes.toNumber(),
+          likeFlag: likeFlag,
         },
       ]);
     };
@@ -146,7 +146,7 @@ function App() {
 
     // Ethereumから飛んでくるEventから、Likeを更新した投稿を再構築
     // Json配列の特定部分だけ更新できるようにしたい、、、
-    const onNewLike = (postId, from, message, timestamp, likes) => {
+    const onNewLike = (postId, from, message, timestamp, likes, likeFlag) => {
       // Mapとして管理しているpostIdと、Eventとして返ってくるpostIdは同一にしているためそのままIndex更新用に使う
       const updateIndex = postId.toNumber()
       // Eventとして取得した値から、特定Postを一から再生成する
@@ -156,6 +156,7 @@ function App() {
         message: message,
         timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
         likes: likes.toNumber(),
+        likeFlag: likeFlag
       }
       // Index番号で検索をかけ、対象Indexの要素のみnewPostに入れ替える
       setAllTweets(
@@ -182,6 +183,8 @@ function App() {
       }
     }
   }, []);
+
+  
 
   // 新規投稿用関数
   const post = async () => {
@@ -222,6 +225,33 @@ function App() {
           signer
         )
         const likeTxn = await web3SNSContract.likesIncrement(_index);
+        console.log("Minting...", likeTxn.hash);
+        setIsLoading(true);
+        await likeTxn.wait();
+        console.log("Minted ---", likeTxn.hash);
+        setIsLoading(false);
+      } else {
+        console.log("ethereum object not found");
+      }
+      // 描画が自動的に切り替わらないのでとりあえずリロード
+      await window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const unlike = async (_index) => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const web3SNSContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        )
+        const likeTxn = await web3SNSContract.likesDiscrement(_index);
         console.log("Minting...", likeTxn.hash);
         setIsLoading(true);
         await likeTxn.wait();
@@ -324,7 +354,7 @@ function App() {
         )}
         <div className='icons'>
           <div className='loading'>
-          {isLoading && <Loading />}
+            {isLoading && <Loading />}
           </div>
           {currentAccount && (
             <button className="waveButton" onClick={post}>
@@ -358,7 +388,10 @@ function App() {
                   <div>Posted at:{post.timestamp}</div>
                   <div className='message'>Message:{post.message}</div>
                   <div>
-                    <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon />{post.likes}</IconButton>
+                    {!post.likeFlag ?
+                      <IconButton aria-label="favorite" size="small" color="primary" onClick={() => like(post.postId)}><FavoriteBorderIcon />{post.likes}</IconButton> :
+                      <IconButton aria-label="favorite" size="small" color="secondary" onClick={() => unlike(post.postId)}><FavoriteBorderIcon />{post.likes}</IconButton>
+                    }
                   </div>
                   <div>
                     <IconButton aria-label="favorite" size="small" color="primary" onClick={() => tip(post.address)}><PaymentIcon />Tip</IconButton>
