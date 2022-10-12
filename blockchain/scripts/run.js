@@ -14,13 +14,16 @@ const main = async () => {
     await tweetTxn3.wait();
     const tweetTxn4 = await tweetContract.tweet("test post#4");
     await tweetTxn4.wait();
-    const likeTxn = await tweetContract.likesIncrement(0);
+    const likeTxn = await tweetContract.likesIncrement(3);
     await likeTxn.wait();
-    const likeTxn2 = await tweetContract.likesIncrement(3);
+    const likeTxn2 = await tweetContract.likesIncrement(2);
     await likeTxn2.wait();
-
-    const postCount = await tweetContract.getPostsCount();
-    console.log(postCount);
+    const likeTxn3 = await tweetContract.likesIncrement(1);
+    await likeTxn3.wait();
+    const unlikeTxn1 = await tweetContract.likesDiscrement(3);
+    await unlikeTxn1.wait();
+    const likeTxn4 = await tweetContract.likesIncrement(3);
+    await likeTxn4.wait();
 
     const posts = await tweetContract.getAllPosts();
     console.log(posts);

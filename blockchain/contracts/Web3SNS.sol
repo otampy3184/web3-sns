@@ -27,7 +27,7 @@ contract Web3SNS {
     Post[] allPosts;
 
     // PostをIdで管理するマッピング
-    mapping (address => uint256[]) public userToLikedList;
+    mapping(address => uint256[]) public userToLikedList;
 
     // 新しいPostがおこなわれた際に呼ばれるイベント
     event NewPost(
@@ -83,22 +83,33 @@ contract Web3SNS {
 
         _postIds.increment();
 
-        emit NewPost(newPostId, msg.sender, _message, _timestamp, initialLikes, initialFlag);
+        emit NewPost(
+            newPostId,
+            msg.sender,
+            _message,
+            _timestamp,
+            initialLikes,
+            initialFlag
+        );
     }
 
     // Postへのいいね機能
     function likesIncrement(uint256 _index) public {
         // 過去に同じ投稿に対してLikeをしていないかをチェック
-        for (uint256 i = 0; i < userToLikedList[msg.sender].length; i++){
+        for (uint256 i = 0; i < userToLikedList[msg.sender].length; i++) {
             uint256 likedIndex = userToLikedList[msg.sender][i];
             console.log(likedIndex);
             require(likedIndex != _index, "You already liked this post");
         }
         //TweetIdToPost[_index].likes++;
         allPosts[_index].likes++;
-        allPosts[_index].likeFlag= true;
+        allPosts[_index].likeFlag = true;
         userToLikedList[msg.sender].push(_index);
-        console.log("New Likes Count:%s by %s", allPosts[_index].likes, msg.sender);
+        console.log(
+            "New Likes Count:%s by %s",
+            allPosts[_index].likes,
+            msg.sender
+        );
         emit NewLike(
             allPosts[_index].postId,
             allPosts[_index].from,
@@ -109,9 +120,30 @@ contract Web3SNS {
         );
     }
 
+    // Postのいいねを解除する機能
     function likesDiscrement(uint256 _index) public {
         allPosts[_index].likes--;
-        console.log("New Likes Count:", allPosts[_index].likes);
+        console.log(allPosts[_index].likes);
+        allPosts[_index].likeFlag = false;
+
+        // 削除対象のListのIndexを線形探索で探す
+        uint256 listLength = userToLikedList[msg.sender].length;
+        uint256 target;
+        for(uint256 i = 0; i < listLength; i++){
+            if(userToLikedList[msg.sender][i] == _index){
+                target = i;
+                break;
+            }
+        }
+        // ユーザーのLikeを管理するリストのうち削除したいものを配列の最後尾に渡して削除する
+        userToLikedList[msg.sender][target] = userToLikedList[msg.sender][listLength - 1];
+        userToLikedList[msg.sender].pop();
+        
+        console.log(
+            "New Likes Count:%s by %s",
+            allPosts[_index].likes,
+            msg.sender
+        );
         emit NewLike(
             allPosts[_index].postId,
             allPosts[_index].from,
@@ -122,9 +154,10 @@ contract Web3SNS {
         );
     }
 
+    // 少額のTipを投稿者に与える機能
     function sendEther(address to) public payable {
         uint256 tipAmount = 0.0001 ether;
-        require (tipAmount <= address(this).balance, "Insufficient Funds");
+        require(tipAmount <= address(this).balance, "Insufficient Funds");
         (bool success, ) = (to).call{value: tipAmount}("");
         require(success, "Failed to send tip");
     }
@@ -134,9 +167,9 @@ contract Web3SNS {
         // 現状のallPostをコピーして読みとっったものをMemoryとして保持することでStorage操作を避ける
         Post[] memory resPosts = allPosts;
         // allPostsのIdとLikedListのIdを突合し、合致しているものがあれば該当するPostのFlagをTrueにする
-        for (uint256 i = 0; i < resPosts.length; i++){
-            for (uint256 j = 0; j < userToLikedList[msg.sender].length; j++){
-                if (resPosts[i].postId == userToLikedList[msg.sender][j]){
+        for (uint256 i = 0; i < resPosts.length; i++) {
+            for (uint256 j = 0; j < userToLikedList[msg.sender].length; j++) {
+                if (resPosts[i].postId == userToLikedList[msg.sender][j]) {
                     resPosts[i].likeFlag = true;
                 }
             }
