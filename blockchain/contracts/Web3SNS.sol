@@ -97,7 +97,7 @@ contract Web3SNS {
         userToLikedList[msg.sender].push(_index);
 
         // Flag情報を保持させないため、Response用のPost配列を作る
-        Post[] memory resPosts;
+        Post[] memory resPosts = allPosts;
         resPosts[_index].likeFlag = true;
 
         emit NewLike(
@@ -130,7 +130,7 @@ contract Web3SNS {
         userToLikedList[msg.sender].pop();
 
         // Flag情報を保持させないため、Response用のPost配列を作る
-        Post[] memory resPosts;
+        Post[] memory resPosts = allPosts;
         resPosts[_index].likeFlag = false;
 
         emit NewLike(
