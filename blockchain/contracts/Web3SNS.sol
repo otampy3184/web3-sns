@@ -19,14 +19,15 @@ contract Web3SNS {
         bool likeFlag;
     }
 
+    // ユーザーへの送金を可能にさせるためPayableでコンストラクタを作成
     constructor() payable {
         console.log("construct success");
     }
 
-    // 全Postの配列
+    // 全Postを管理する配列
     Post[] allPosts;
 
-    // PostをIdで管理するマッピング
+    // 誰がどのPostをいいねしたか管理するマッピング
     mapping(address => uint256[]) public userToLikedList;
 
     // 新しいPostがおこなわれた際に呼ばれるイベント
@@ -38,6 +39,8 @@ contract Web3SNS {
         uint256 likes,
         bool likeFlag
     );
+
+    // 新しくPostをいいねした際に呼ばれるイベント
     event NewLike(
         uint256 postId,
         address from,
@@ -49,19 +52,17 @@ contract Web3SNS {
 
     // 新規の投稿機能
     function tweet(string memory _message) public {
-        console.log("making tweet...");
-
         // 現在のPostIDを取得
         uint256 newPostId = _postIds.current();
 
         // 現在のTimestampをBlockから取得
         uint256 _timestamp = block.timestamp;
 
+        // 変数の初期値
         uint256 initialLikes = 0;
-
         bool initialFlag = false;
 
-        // 新規Postの作成
+        // 新規Postの作成し、配列に渡す
         Post memory newPost = Post({
             postId: newPostId,
             from: msg.sender,
@@ -70,16 +71,7 @@ contract Web3SNS {
             likes: initialLikes,
             likeFlag: initialFlag
         });
-
-        // 新規Postを配列に渡し、マッピングに登録する
         allPosts.push(newPost);
-
-        // 動作確認
-        console.log(
-            "tweet by %s w/ ID %s has been posted",
-            msg.sender,
-            newPostId
-        );
 
         _postIds.increment();
 
@@ -95,21 +87,17 @@ contract Web3SNS {
 
     // Postへのいいね機能
     function likesIncrement(uint256 _index) public {
-        // 過去に同じ投稿に対してLikeをしていないかをチェック
+        // 過去に同じ投稿に対していいねをしていないかをチェック
         for (uint256 i = 0; i < userToLikedList[msg.sender].length; i++) {
             uint256 likedIndex = userToLikedList[msg.sender][i];
-            console.log(likedIndex);
             require(likedIndex != _index, "You already liked this post");
         }
-        //TweetIdToPost[_index].likes++;
+        // いいね情報の更新
         allPosts[_index].likes++;
+        
         allPosts[_index].likeFlag = true;
         userToLikedList[msg.sender].push(_index);
-        console.log(
-            "New Likes Count:%s by %s",
-            allPosts[_index].likes,
-            msg.sender
-        );
+
         emit NewLike(
             allPosts[_index].postId,
             allPosts[_index].from,
@@ -120,13 +108,13 @@ contract Web3SNS {
         );
     }
 
-    // Postのいいねを解除する機能
+    // Postへのいいねを解除する機能
     function likesDiscrement(uint256 _index) public {
+        // いいね情報の更新
         allPosts[_index].likes--;
-        console.log(allPosts[_index].likes);
         allPosts[_index].likeFlag = false;
 
-        // 削除対象のListのIndexを線形探索で探す
+        // 削除対象のいいねListのIndexを線形探索で探す
         uint256 listLength = userToLikedList[msg.sender].length;
         uint256 target;
         for(uint256 i = 0; i < listLength; i++){
@@ -135,10 +123,11 @@ contract Web3SNS {
                 break;
             }
         }
+
         // ユーザーのLikeを管理するリストのうち削除したいものを配列の最後尾に渡して削除する
         userToLikedList[msg.sender][target] = userToLikedList[msg.sender][listLength - 1];
         userToLikedList[msg.sender].pop();
-        
+
         console.log(
             "New Likes Count:%s by %s",
             allPosts[_index].likes,
