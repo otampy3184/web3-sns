@@ -310,7 +310,6 @@ function App() {
         return (a.timestamp > b.timestamp) ? -1 : 1;
       }
     });
-    //setResults(result);
     setAllTweets(result);
   }
 
@@ -319,13 +318,12 @@ function App() {
     const result = allTweets.sort(await function (a, b) {
       if (sortByLikesFlg === true) {
         setSortByLikesFlg(false);
-        return (a.timestamp > b.timestamp) ? -1 : 1;
+        return (a.likes < b.likes) ? -1 : 1;
       } else {
         setSortByLikesFlg(true);
-        return (a.likes < b.likes) ? -1 : 1;
+        return (a.likes > b.likes) ? -1 : 1;
       }
     });
-    //setResults(result);
     setAllTweets(result);
   }
 
