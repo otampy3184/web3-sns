@@ -310,7 +310,7 @@ function App() {
         return (a.timestamp > b.timestamp) ? -1 : 1;
       }
     });
-    setResults(result);
+    //setResults(result);
     setAllTweets(result);
   }
 
@@ -324,9 +324,9 @@ function App() {
         setSortByLikesFlg(true);
         return (a.likes < b.likes) ? -1 : 1;
       }
-      setResults(result);
-      setAllTweets(result)
-    })
+    });
+    //setResults(result);
+    setAllTweets(result);
   }
 
   return (
