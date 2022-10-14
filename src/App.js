@@ -90,7 +90,7 @@ function App() {
             postId: post.postId.toNumber(),
             address: post.from,
             message: post.message,
-            timestamp: (new Date(post.timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(post.timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
+            timestamp: post.timestamp,
             likes: post.likes.toNumber(),
             likeFlag: post.likeFlag,
           };
@@ -118,7 +118,7 @@ function App() {
           address: from,
           message: message,
           // UTC表示に対応させる
-          timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
+          timestamp: timestamp,
           likes: likes.toNumber(),
           likeFlag: likeFlag,
         },
@@ -158,7 +158,7 @@ function App() {
         postId: postId.toNumber(),
         address: from,
         message: message,
-        timestamp: (new Date(timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT")),
+        timestamp: timestamp,
         likes: likes.toNumber(),
         likeFlag: likeFlag
       }
@@ -392,7 +392,7 @@ function App() {
                 >
                   <div>#{post.postId}</div>
                   <div>@{post.address}</div>
-                  <div>Posted at:{post.timestamp}</div>
+                  <div>Posted at:{(new Date(post.timestamp.toNumber().toString() * 1000)).toString().substring(0, (new Date(post.timestamp.toNumber().toString() * 1000)).toString().indexOf("GMT"))}</div>
                   <div className='message'>Message:{post.message}</div>
                   <div>
                     {!post.likeFlag ?
