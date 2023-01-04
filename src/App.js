@@ -17,7 +17,7 @@ function App() {
   const [allTweets, setAllTweets] = useState([]);
   const [results, setResults] = useState([]);
 
-  const contractAddress = "0x39Ffa1CdEe990a3Dff74875f7f20fc3dA37d8904";
+  const contractAddress = "0x3c33d996e0D9D3C05C6883aC14343DAe5bf4Ec2C";
   const contractABI = abi.abi;
 
   // Walletの接続状況をチェック
